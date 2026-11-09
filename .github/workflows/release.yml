@@ -28,8 +28,9 @@ jobs:
           m=json.loads((p/'manifest.json').read_text())
           assert m['format']==1 and m['repository']=='mistermrthomas/ai-command-center-releases'
           assert type(m['sequence']) is int and m['sequence']>0
-          assert m['scope'] in ('version_only','bug_fix','minor_style') and m['migrations'] is False
-          assert m['approval_ref']=='owner-development-updates-2026-11-09'
+          ordinary=m['scope'] in ('version_only','bug_fix','minor_style') and m['approval_ref']=='owner-development-updates-2026-11-09'
+          scoped=m['scope']=='spending' and m['approval_ref']=='owner-task-policy-2026-11-09'
+          assert (ordinary or scoped) and m['migrations'] is False
           assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?',m['version'])
           assert hashlib.sha256((p/'application.zip').read_bytes()).hexdigest()==m['sha256']
           allowed={'app.py','static/app.js','static/index.html','static/styles.css','VERSION','CHANGELOG.md'}
