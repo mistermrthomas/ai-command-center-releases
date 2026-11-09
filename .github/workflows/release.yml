@@ -1,0 +1,50 @@
+name: Publish signed artifacts
+on:
+  push:
+    branches: [main]
+    paths: ['artifacts/**']
+permissions:
+  contents: read
+concurrency:
+  group: publish-signed-artifacts
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Authenticate manifest and integrity
+        id: verify
+        run: |
+          openssl dgst -sha256 -verify release-public.pem -signature artifacts/manifest.sig artifacts/manifest.json
+          python3 - <<'PY'
+          import hashlib,json,os,re,zipfile
+          from pathlib import Path
+          p=Path('artifacts')
+          m=json.loads((p/'manifest.json').read_text())
+          assert m['format']==1 and m['repository']=='mistermrthomas/ai-command-center-releases'
+          assert type(m['sequence']) is int and m['sequence']>0
+          assert m['scope'] in ('version_only','bug_fix','minor_style') and m['migrations'] is False
+          assert m['approval_ref']=='owner-development-updates-2026-11-09'
+          assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?',m['version'])
+          assert hashlib.sha256((p/'application.zip').read_bytes()).hexdigest()==m['sha256']
+          allowed={'app.py','static/app.js','static/index.html','static/styles.css','VERSION','CHANGELOG.md'}
+          assert set(m['files'])==allowed
+          with zipfile.ZipFile(p/'application.zip') as z:
+              assert len(z.infolist())==len(allowed) and set(z.namelist())==allowed
+              for n in allowed:
+                  assert hashlib.sha256(z.read(n)).hexdigest()==m['files'][n]
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              f.write('tag=dev-'+str(m['sequence'])+'\nversion='+m['version']+'\n')
+          PY
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.verify.outputs.tag }}
+          VERSION: ${{ steps.verify.outputs.version }}
+        run: |
+          gh release create "$TAG" artifacts/application.zip artifacts/manifest.json artifacts/manifest.sig --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Development $VERSION" --notes 'Signed, tested, approved-scope development update. See the bundled CHANGELOG.md.' --latest
