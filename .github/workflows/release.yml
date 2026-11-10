@@ -30,7 +30,7 @@ jobs:
           assert type(m['sequence']) is int and m['sequence']>0
           ordinary=m['scope'] in ('version_only','bug_fix','minor_style') and m['approval_ref']=='owner-development-updates-2026-11-09'
           scoped=m['scope']=='spending' and m['approval_ref']=='owner-task-policy-2026-11-09'
-          workflow=m['scope']=='development_feature' and m['approval_ref'] in ('owner-submit-workflow-2026-11-09','owner-muse-work-signal-2026-11-09')
+          workflow=m['scope']=='development_feature' and m['approval_ref'] in ('owner-submit-workflow-2026-11-09','owner-muse-work-signal-2026-11-09','owner-three-turn-dialogue-2026-11-09')
           assert (ordinary or scoped or workflow) and m['migrations'] is False
           assert re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?',m['version'])
           assert hashlib.sha256((p/'application.zip').read_bytes()).hexdigest()==m['sha256']
