@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>AI Command Center</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script defer src="/app.js"></script>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark"><span>✳</span></div><div><div class="brand-title">COMMAND<span> / </span>CENTER</div><div class="brand-subtitle">PRIVATE AGENT WORKSPACE</div></div></div>
+      <div class="environment"><span class="live-dot"></span> Local prototype <span class="tag" id="local-mode">Local</span></div>
+      <button class="primary add-btn" id="newDiscussion">＋ &nbsp; New discussion</button>
+      <button class="outline overview-link" id="goOverview">◫ &nbsp; Priority dashboard</button>
+      <div class="section-label">DISCUSSIONS <span id="discussionCount">0</span></div>
+      <nav id="discussionList" class="conversation-list" aria-label="Discussions"></nav>
+      <div class="sidebar-bottom">
+        <div class="mini-heading">COST CONTROL <span class="tiny-badge">ACTIVE</span></div>
+        <div class="cost-summary"><span id="spendLabel">This month's OpenAI estimate</span><strong id="monthlySpend">$0.00</strong></div>
+        <div class="progress-track"><div id="budgetFill" class="progress-fill"></div></div>
+        <div class="cost-foot"><span id="budgetInfo">$3.00 local guard</span><span id="grokBudgetInfo">Grok task approval</span></div>
+        <div class="sidebar-tip">🔒 &nbsp; Local database · Task-scoped automation · Monthly limits</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div class="topbar"><span class="breadcrumbs">Workspace <span class="slash">/</span> <strong id="crumbTitle">Overview</strong></span><div class="top-actions"><span class="status-pill">● &nbsp; Safe mode</span><button class="theme-toggle small" id="themeToggle" type="button" aria-label="Toggle dark mode" aria-pressed="false">☾ Dark mode</button><button class="outline small" id="openOverseerSettings" type="button">⚙ Overseer settings</button><button class="outline small" id="openGrokSettings">⚙ Grok settings</button><button class="ghost small" id="reloadBtn" title="Refresh">↻ &nbsp; Refresh</button></div></div>
+      <div id="toast" role="status" aria-live="polite"></div>
+      <section id="homeView" class="home">
+        <div class="eyebrow"><span class="eyebrow-line"></span> HUMAN-LED, AI-ASSISTED</div>
+        <h1>Your agents.<br><em>One place to think.</em></h1>
+        <p class="home-sub">Submit a request. Muse and Grok challenge and revise each other’s proposals for up to three turns each. The Overseer weighs every turn and explains its recommendation. Follow their handoffs in the discussion.</p>
+        <div class="home-actions"><button class="primary big" id="startBtn">Start a roundtable <span>↗</span></button><button class="outline big" id="sampleBtn">Use example topic</button></div>
+        <div class="home-grid">
+          <article class="feature"><span class="feature-icon">◈</span><strong>Shared record</strong><p>Keep agent responses, attribution, and decisions in one transcript.</p></article>
+          <article class="feature"><span class="feature-icon">⇄</span><strong>Selective collaboration</strong><p>Invite only the agents whose perspectives add real value.</p></article>
+          <article class="feature"><span class="feature-icon">◉</span><strong>Cost + privacy control</strong><p>Review exactly what leaves your computer. No automatic sharing of complete transcripts.</p></article>
+        </div>
+        <div class="home-note"><span>EARLY ACCESS BUILD</span><p>Submit a discussion for up to three turns each between Muse and Grok, then one Overseer recommendation. Connection blockers appear in the discussion; a queued assignment is not a completed run.</p></div>
+        <div class="work-panel" id="workPanel">
+          <div class="work-head"><div><div class="eyebrow small-eye">OVERSEER ACCOUNTABILITY</div><h2>Priorities & approvals</h2><p>One portfolio across your projects. All changes are locally recorded; nothing executes automatically.</p></div><button class="primary" id="addPriority">＋ Add priority</button></div>
+          <div id="workSummary" class="work-summary"></div>
+          <div class="work-subhead"><h3>Priority list</h3><span>Overseer accountable · assignees report evidence</span></div>
+          <div id="priorityList" class="work-list" aria-live="polite"></div>
+          <div class="work-subhead"><h3>Approval queue</h3><button id="addApproval" class="outline small">＋ Request approval</button></div>
+          <div id="approvalList" class="work-list" aria-live="polite"></div>
+          <div class="work-subhead"><h3>Change log</h3><button id="addChange" class="outline small">＋ Log a change</button></div>
+          <p class="work-footnote">Routine bug fixes and small visual corrections may proceed without advance approval. Major redesigns and sensitive changes need your decision first. Log every completed change.</p>
+          <div id="changeList" class="work-list" aria-live="polite"></div>
+          <p class="work-footnote">Entries below are append-only, owner-reported records; logging a change never executes or independently verifies it. The exposed agent gateway has no access to approval or change-log controls.</p>
+        </div>
+      </section>
+      <section id="threadView" class="thread" hidden>
+        <div class="thread-header"><div><div class="eyebrow small-eye">ACTIVE ROUNDTABLE</div><h1 id="threadTitle">Discussion</h1><p id="threadGoal"></p></div><button class="outline" id="exportBtn">↧ &nbsp; Export</button></div>
+        <section id="workflowPanel" class="activity-board" aria-live="polite" hidden>
+          <strong id="workflowStatus"></strong><p id="workflowNote"></p>
+          <details class="chat-technical"><summary>Workflow steps</summary><div id="workflowEvents"></div></details>
+          <button id="workflowResume" class="outline small" type="button" hidden>Resume saved task</button>
+          <button id="workflowReview" class="primary" type="button" hidden>Review handoff</button>
+        </section>
+        <div class="thread-tools"><span id="messageCount">0 messages</span><span class="info-chip" id="roundtableModeChip">Collaborative mode</span><span class="info-chip">Bounded dialogue</span><span class="info-chip">No endless loops</span></div>
+        <div class="transcript-heading"><strong>Chat</strong><span>Latest replies first · see which agent each reply builds on</span></div>
+        <div id="messageFeed" class="message-feed" aria-live="polite"></div>
+        <details class="chat-technical"><summary>Agent activity &amp; transport details</summary>
+        <section class="activity-board" aria-label="Agent activity monitor">
+          <div class="activity-head"><div><strong>Live activity</strong><span>Agent handoffs, replies and completion status</span></div><span id="activityConnection" class="activity-indicator" aria-live="polite">● Watching</span></div>
+          <div id="activityFeed" class="activity-feed" aria-live="polite"></div>
+        </section>
+        </details>
+        <div class="reply-form collaborator" aria-label="Start Collaborative workflow">
+          <div class="form-heading"><strong>Start this discussion</strong><span>Up to 3 turns each · one Overseer recommendation</span></div>
+          <div id="collaborativeStatus" class="collaborative-status">Ready when Grok is configured.</div>
+          <div class="reply-footer"><span>Starting shares this brief and bounded task handoffs with Muse, Grok and the Overseer under your existing limits. Unrelated history is excluded; sensitive-looking content pauses.</span><button type="button" class="primary" id="startCollaborative">Start Collaborative &nbsp; ↗</button></div>
+        </div>
+        <div class="action-area">
+          <div class="action-heading">NEXT ACTION <span id="agentPromptHint">Invite an agent or add a reply</span></div>
+          <div class="quick-actions">
+            <button id="copyGrok" class="action-btn"><span class="action-ico">✳</span><span>Handoff to Grok<small>Copy prompt</small></span><span class="arrow">↗</span></button>
+            <button id="copyMuse" class="action-btn"><span class="action-ico">✦</span><span>Handoff to Muse<small>Copy prompt</small></span><span class="arrow">↗</span></button>
+            <button id="copyOverseer" class="action-btn"><span class="action-ico">◇</span><span>ChatGPT review<small>Use Plus, no API bill</small></span><span class="arrow">↗</span></button>
+          </div>
+          <div class="ai-actions">
+            <button class="outline" id="geminiDraft">✧ &nbsp; Ask Gemini to draft</button>
+            <button class="outline" id="geminiChallenge">⌁ &nbsp; Ask Gemini to challenge</button>
+            <button class="outline" id="openaiReview">◈ &nbsp; API overseer review</button>
+          </div>
+          <div class="reply-form" aria-label="Grok Bot assignments">
+            <div class="form-heading"><strong>Assign to Grok Bot (one-time webhook)</strong><span>Queue first, then send once with your approval</span></div>
+            <textarea id="grokAssignmentPrompt" rows="3" maxlength="9000" placeholder="Optional instructions. Leave blank for a focused architecture review."></textarea>
+            <div class="reply-footer"><span>Queueing is free; dispatching initiates one Grok routine that uses your allowance.</span><button type="button" class="primary" id="queueGrok">Queue Grok assignment &nbsp; ↗</button></div>
+          </div>
+          <div class="reply-form" aria-label="Muse assignments">
+            <div class="form-heading"><strong>Assign to Muse (test integration)</strong><span>Requires a configured token and a manual poll by Muse</span></div>
+            <textarea id="museAssignmentPrompt" rows="3" maxlength="9000" placeholder="Optional instructions. Leave blank for an independent review of this roundtable."></textarea>
+            <div class="reply-footer"><span>Queueing does not invoke Muse or consume any Grok/OpenAI API usage.</span><button type="button" class="primary" id="queueMuse">Queue Muse assignment &nbsp; ↗</button></div>
+            <div class="form-heading"><strong>Agent assignment queue</strong><span>Only Grok gets an explicit one-time dispatch button</span></div>
+            <div id="museAssignmentList" class="muse-assignments" aria-live="polite"></div>
+          </div>
+          <form id="replyForm" class="reply-form">
+            <div class="form-heading"><strong>Record an agent's reply</strong><span>Manual entries are clearly labeled</span></div>
+            <select id="replyAgent" aria-label="Which agent responded?"><option>Grok Bot</option><option>Muse</option><option>Claude</option><option>Gemini</option><option>OpenAI Overseer</option><option>You</option></select>
+            <textarea id="replyBody" placeholder="Paste the agent's actual reply here..." rows="4" required maxlength="35000"></textarea>
+            <div class="reply-footer"><span>Never share passwords or sensitive work data with free-tier APIs.</span><button type="submit" class="primary">Save reply &nbsp; ↗</button></div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <aside class="rightbar">
+      <div class="right-header"><span class="right-title">AGENT ROSTER</span><span class="right-count">05</span></div>
+      <div class="roster" id="roster"></div>
+      <div class="divider"></div>
+      <div class="right-header"><span class="right-title">GROUND RULES</span></div>
+      <div class="rule"><span class="check">✓</span><div>Intentional API calls<small>Submitted tasks only</small></div></div>
+      <div class="rule"><span class="check">✓</span><div>Payload review required<small>No hidden full-transcript API send</small></div></div>
+      <div class="rule"><span class="check">✓</span><div>Provenance preserved<small>Manual vs. verified API</small></div></div>
+      <div class="rule"><span class="check">✓</span><div>Overseer has no tools<small>Cannot modify external systems</small></div></div>
+      <div class="rule"><span class="check">✓</span><div>No unexpected X usage<small>Up to 3 Grok dispatches per new task</small></div></div>
+      <div class="right-info"><div class="info-title">CREATIVE ROLE</div><p>OpenAI / ChatGPT: visuals, image concepts, graphics, presentations, and visual QA. Image generation is planned, not connected in this prototype.</p></div>
+      <div class="right-info"><div class="info-title">WHAT'S NEXT</div><p>Muse and Grok have verified callbacks. Muse’s lightweight native hook can use the public work signal. Hook setup and an unattended live test are still required.</p></div>
+    </aside>
+  </div>
+
+  <div id="overseerSettingsModal" class="modal-backdrop" hidden>
+    <form id="overseerSettingsForm" class="modal-card">
+      <div class="modal-top"><h2>Overseer connection</h2><button id="closeOverseerSettings" class="icon-btn" type="button" aria-label="Close">×</button></div>
+      <p id="overseerSettingsNote"></p>
+      <label for="overseerApiKey">OpenAI API key</label>
+      <input id="overseerApiKey" type="password" autocomplete="new-password" required minlength="20" maxlength="2000">
+      <p>The key stays in this Mac’s private configuration and is never echoed back. Saving resumes approved tasks waiting for the Overseer, within your existing spending guard. API billing is separate from ChatGPT subscriptions. Set provider-side limits too; the local guard uses estimates.</p>
+      <div class="modal-footer"><button type="submit" class="primary">Save locally &amp; resume</button></div>
+    </form>
+  </div>
+
+  <div id="modal" class="modal-backdrop" hidden>
+    <form id="createForm" class="modal-card">
+      <div class="modal-top"><div><div class="eyebrow small-eye">NEW ROUNDTABLE</div><h2>Set the objective</h2></div><button type="button" class="icon-btn" id="closeModal" aria-label="Close">×</button></div>
+      <label for="newTitle">Discussion title (optional)</label>
+      <input type="text" id="newTitle" maxlength="120" placeholder="Optional short title">
+      <label for="newGoal">What should the agents solve?</label>
+      <textarea id="newGoal" rows="6" maxlength="5000" placeholder="Describe the decision, constraints, and what a successful answer looks like..." required></textarea>
+      <label for="newRoundtableMode">Roundtable mode</label>
+      <select id="newRoundtableMode" name="roundtable_mode" aria-label="Roundtable mode">
+        <option value="collaborative" selected>Collaborative — default</option>
+        <option value="lean">Lean — minimal agent involvement</option>
+        <option value="full-panel">Full panel — for major decisions</option>
+      </select>
+      <label><input type="checkbox" id="newGeminiPublicSafe"> Include Gemini + Google Search each round: this brief and its task handoffs are public-safe.</label>
+      <label><input type="checkbox" id="newClaudePublicSafe"> Include Claude as the independent critique each round: this brief and its task handoffs are public-safe.</label>
+      <p>Gemini and Claude are optional and use environment keys. A public-safe discussion can include up to three grounded Gemini checks, three Claude critiques, three Muse and three Grok turns, plus one Overseer. Their API costs share a $0.25 discussion cap and the monthly API guard. If Claude’s key is missing, that critique is skipped and the discussion continues. Do not select either provider for personal or private material.</p>
+      <p>Start approves this brief and bounded task handoffs for up to 3 turns each between Muse and Grok, followed by one OpenAI Overseer synthesis. Both can stop after two exchanges if they report no remaining issues. Your existing API and Grok monthly limits remain in force. Muse’s native usage is not metered by the app. No unrelated history or files are shared. Suspected sensitive content pauses for review. Automatic progress depends on Muse’s native hook and a configured Overseer API key; the discussion shows its current blockers. Modes currently use the same bounded three-turn policy; existing discussions retain their original plan.</p>
+      <div class="modal-footer"><button class="outline" type="button" id="cancelModal">Cancel</button><button class="primary" type="submit">Start discussion &nbsp; ↗</button></div>
+    </form>
+  </div>
+  <div id="priorityModal" class="modal-backdrop" hidden>
+    <form id="priorityForm" class="modal-card work-modal">
+      <div class="modal-top"><div><div class="eyebrow small-eye">OVERSEER PORTFOLIO</div><h2 id="priorityModalTitle">Add priority</h2></div><button type="button" class="icon-btn" id="closePriority" aria-label="Close">×</button></div>
+      <label for="taskTitle">Priority item</label><input id="taskTitle" maxlength="120" required placeholder="e.g., Review family app usability">
+      <div class="work-fields"><div><label for="taskProject">Project</label><input id="taskProject" maxlength="100" value="Command Center" required></div>
+        <div><label for="taskType">Type</label><select id="taskType"><option value="integration">Integration</option><option value="application_review">Application review</option><option value="roundtable">Roundtable</option><option value="research">Research</option><option value="creative">Creative</option><option value="execution">Execution</option></select></div></div>
+      <div class="work-fields"><div><label for="taskPriority">Priority</label><select id="taskPriority"><option>P1</option><option selected>P2</option><option>P3</option></select></div>
+        <div><label for="taskStatus">Status</label><select id="taskStatus"><option value="proposed">Proposed</option><option value="ready">Ready</option><option value="in_progress">In progress</option><option value="blocked">Blocked</option><option value="awaiting_approval">Awaiting approval</option><option value="completed">Completed</option><option value="cancelled">Cancelled</option></select></div>
+        <div><label for="taskOwner">Owner</label><select id="taskOwner"><option>Unassigned</option><option>You</option><option>OpenAI Overseer</option><option>Grok Bot</option><option>Muse</option><option>Gemini</option><option>Claude</option><option>Codex</option></select></div></div>
+      <label for="taskNext">Next action</label><textarea id="taskNext" rows="2" maxlength="1000" placeholder="What specifically happens next?"></textarea>
+      <label for="taskDescription">Notes / definition of done</label><textarea id="taskDescription" rows="3" maxlength="4000"></textarea>
+      <div class="modal-footer"><button type="button" class="outline" id="cancelPriority">Cancel</button><button type="submit" class="primary">Save priority</button></div>
+    </form>
+  </div>
+  <div id="approvalModal" class="modal-backdrop" hidden>
+    <form id="approvalForm" class="modal-card work-modal">
+      <div class="modal-top"><div><div class="eyebrow small-eye">CHANGE CONTROL</div><h2>Request your approval</h2></div><button type="button" class="icon-btn" id="closeApproval" aria-label="Close">×</button></div>
+      <label for="approvalPriority">Related priority</label><select id="approvalPriority"><option value="">None / general</option></select>
+      <label for="approvalType">Type of significant change</label><select id="approvalType"><option value="bug_fix">Significant-impact bug fix</option><option value="minor_style">Significant-impact minor visual fix</option><option value="minor_feature">Significant-impact small feature</option><option value="major_style">Major style / layout redesign</option><option value="major_feature">Major feature or workflow change</option><option value="security_privacy">Security or privacy behavior</option><option value="data_permissions">Data access or permissions</option><option value="deployment">Production deployment</option><option value="spending">Spending or subscription change</option></select>
+      <label for="approvalSummary">Exactly what would change?</label><input id="approvalSummary" maxlength="200" required>
+      <label for="approvalReason">Why / expected benefit</label><textarea id="approvalReason" rows="2" maxlength="2000" required></textarea>
+      <label for="approvalAffected">Affected apps, data, or people</label><textarea id="approvalAffected" rows="2" maxlength="1000" required></textarea>
+      <label for="approvalRisk">Risk / privacy impact</label><textarea id="approvalRisk" rows="2" maxlength="2000" required></textarea>
+      <label for="approvalCost">Estimated cost or quota impact</label><input id="approvalCost" maxlength="300" required placeholder="e.g., $0 additional; one Grok routine">
+      <label for="approvalRollback">Rollback / how to undo</label><textarea id="approvalRollback" rows="2" maxlength="2000" required></textarea>
+      <div class="modal-footer"><button type="button" class="outline" id="cancelApproval">Cancel</button><button type="submit" class="primary">Send to approval queue</button></div>
+    </form>
+  </div>
+  <div id="changeModal" class="modal-backdrop" hidden>
+    <form id="changeForm" class="modal-card work-modal">
+      <div class="modal-top"><div><div class="eyebrow small-eye">CHANGE HISTORY</div><h2>Record a completed change</h2></div><button type="button" class="icon-btn" id="closeChange" aria-label="Close">×</button></div>
+      <p>This is a record of a change already made, not a way to execute code. Every log entry is append-only.</p>
+      <div class="work-fields"><div><label for="changeProject">App / project</label><input id="changeProject" maxlength="100" value="AI Command Center" required></div>
+      <div><label for="changeType">Category</label><select id="changeType"><option value="bug_fix">Routine bug fix</option><option value="minor_style">Minor visual fix</option><option value="minor_feature">Small feature improvement</option><option value="major_style">Major style / layout redesign</option><option value="major_feature">Major feature / workflow change</option><option value="security_privacy">Security or privacy change</option><option value="data_permissions">Data access or permissions</option><option value="deployment">Production deployment</option><option value="spending">Spending or subscription change</option></select></div></div>
+      <label for="changeSummary">What changed?</label><input id="changeSummary" maxlength="200" required placeholder="e.g., Fixed duplicate calendar entries">
+      <div class="work-fields"><div><label for="changeImpact">Impact</label><select id="changeImpact"><option value="routine">Routine / low risk</option><option value="significant">Significant / higher risk</option></select></div>
+      <div><label for="changeOwner">Implemented by</label><input id="changeOwner" maxlength="100" value="Codex" required></div></div>
+      <label for="changeDetails">What was actually changed?</label><textarea id="changeDetails" rows="2" maxlength="2500" required></textarea>
+      <label for="changeVerification">How was it checked?</label><textarea id="changeVerification" rows="2" maxlength="2000" required placeholder="Tests, manual QA, or explicitly unverified"></textarea>
+      <label for="changeRef">Version, commit, or PR (optional)</label><input id="changeRef" maxlength="300" placeholder="e.g., v0.7 or commit hash">
+      <div id="changeApprovalFields" hidden><label for="changeApproval">Prior approved request</label><select id="changeApproval"><option value="">Choose an approved request</option></select></div>
+      <p id="changePolicyHint">Routine, low-risk changes can be recorded without prior approval. Bug fixes that affect sensitive data or major behavior still require approval.</p>
+      <div class="modal-footer"><button type="button" class="outline" id="cancelChange">Cancel</button><button type="submit" class="primary">Add to change log</button></div>
+    </form>
+  </div>
+  <div id="grokSettingsModal" class="modal-backdrop" hidden>
+    <form id="grokSettingsForm" class="modal-card work-modal">
+      <div class="modal-top"><div><div class="eyebrow small-eye">AGENT CONNECTION</div><h2>Connect your existing Grok Bot</h2></div><button type="button" class="icon-btn" id="closeGrokSettings" aria-label="Close">×</button></div>
+      <p>Copy the webhook URL and sender key from Grok's routine panel. Secrets are stored only in your Mac's local .env file, never in a chat or sent to another AI.</p>
+      <label for="grokWebhookUrl">Routine webhook URL</label><input type="url" id="grokWebhookUrl" placeholder="https://..." autocomplete="off">
+      <label for="grokSenderKey">Routine sender key</label><input type="password" id="grokSenderKey" placeholder="Leave blank to keep current key" autocomplete="off">
+      <label for="grokGatewayUrl">Your temporary gateway HTTPS URL</label><input type="url" id="grokGatewayUrl" placeholder="https://...trycloudflare.com" autocomplete="off">
+      <p id="grokSetupNote">No token will be displayed until you save the initial setup.</p>
+      <div id="grokCallbackBox" hidden>
+        <label for="grokCallbackToken">Grok's Command Center callback token — shown once</label>
+        <input id="grokCallbackToken" type="password" readonly autocomplete="off">
+        <div class="modal-footer"><button type="button" class="outline" id="copyGrokToken">Copy callback token</button></div>
+        <p>Put this callback token in Grok's secure credential store, scoped to GET /assignments and POST /messages. Do not paste it in an ordinary chat.</p>
+      </div>
+      <label class="outbound-approve"><input type="checkbox" id="rotateGrokToken"> Rotate Grok callback token (only if you lost it or it may be exposed)</label>
+      <div class="modal-footer"><button type="button" class="outline" id="cancelGrokSettings">Close</button><button type="submit" class="primary" id="saveGrokSettings">Save connection locally</button></div>
+    </form>
+  </div>
+  <div id="outboundModal" class="modal-backdrop" hidden>
+    <form id="outboundForm" class="modal-card review-modal">
+      <div class="modal-top"><div><div class="eyebrow small-eye">DATA RELEASE REVIEW</div><h2 id="outboundTitle">Review outgoing content</h2></div><button type="button" class="icon-btn" id="closeOutbound" aria-label="Close">×</button></div>
+      <p id="outboundDestination"></p>
+      <label for="outboundPrompt">Exactly what will be sent or copied</label>
+      <textarea id="outboundPrompt" rows="12" maxlength="12000" required></textarea>
+      <div id="taskApiPlan" hidden>
+        <p>Optional API steps: approve them here once for this exact brief. They are not called automatically. Agent replies are not forwarded automatically.</p>
+        <label class="outbound-approve"><input id="planOpenai" type="checkbox"> Include one OpenAI review of this brief</label>
+        <label class="outbound-approve"><input id="planGeminiDraft" type="checkbox"> Include one Gemini draft of this brief</label>
+        <label class="outbound-approve"><input id="planGeminiChallenge" type="checkbox"> Include one Gemini challenge of this brief</label>
+        <details><summary>Exact optional API payloads</summary><pre id="taskApiPreview" class="message-body"></pre></details>
+        <p id="taskBudgetSummary">Monthly limits apply. Failed/uncertain calls retain their reservation. Review the permitted data and agents, then approve this task once.</p>
+      </div>
+      <p>Remove unnecessary names, family details, addresses, confidential business information, and anything private. Review manually; the app does not automatically detect every sensitive detail.</p>
+      <label class="outbound-approve"><input id="outboundApprove" type="checkbox" required> I reviewed this payload and approve sharing it with the indicated destination.</label>
+      <div class="modal-footer"><button type="button" class="outline" id="cancelOutbound">Cancel</button><button class="primary" type="submit" id="confirmOutbound">Approve and continue</button></div>
+    </form>
+  </div>
+</body>
+</html>
